@@ -14,8 +14,8 @@ def load_raw_data(project_dir):
     
     with open(project_dir + '/data/interim/newsgroup.pkl', 'rb') as f:
         data = pickle.load(f)   
- 
     return data
+
 
 def vectorize(data):
     ''' Vectorize text data using TF-IDF. 
@@ -49,6 +49,8 @@ def main(project_dir):
 
     data = load_raw_data(project_dir)
     vec_data = vectorize(data)
+    with open(project_dir + '/data/processed/TFIDFnewsgroup.pkl', 'wb') as f:
+        pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
