@@ -1,6 +1,8 @@
 absl-py==0.7.1
 arrow==0.14.2
 astor==0.8.0
+atomicwrites==1.3.0
+attrs==19.1.0
 binaryornot==0.4.4
 certifi==2019.6.16
 chardet==3.0.4
@@ -12,6 +14,7 @@ google-pasta==0.1.7
 grpcio==1.22.0
 h5py==2.9.0
 idna==2.8
+importlib-metadata==0.18
 Jinja2==2.10.1
 jinja2-time==0.2.0
 joblib==0.13.2
@@ -20,10 +23,17 @@ Keras-Applications==1.0.8
 Keras-Preprocessing==1.1.0
 Markdown==3.1.1
 MarkupSafe==1.1.1
+more-itertools==7.1.0
 numpy==1.16.4
+packaging==19.0
 pandas==0.24.2
+pathlib2==2.3.4
+pluggy==0.12.0
 poyo==0.4.2
 protobuf==3.8.0
+py==1.8.0
+pyparsing==2.4.0
+pytest==5.0.1
 python-dateutil==2.8.0
 pytz==2019.1
 PyYAML==5.1.1
@@ -36,6 +46,8 @@ tensorflow==1.14.0
 tensorflow-estimator==1.14.0
 termcolor==1.1.0
 urllib3==1.25.3
+wcwidth==0.1.7
 Werkzeug==0.15.4
 whichcraft==0.5.2
 wrapt==1.11.2
+zipp==0.5.2
