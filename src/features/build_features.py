@@ -5,6 +5,8 @@ from pathlib import Path
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+#from utility import pack_data_dict, unpack_data_dict
+
 def load_raw_data(project_dir):
     ''' Load raw newsgroup data.
    
@@ -26,18 +28,14 @@ def vectorize(data):
     Returns:
     vec_data - data passed through sklearn's TF-IDF
     '''
-    
-    X_train = data['X_train']
-    X_test = data['X_test']
+   
+    X_train, y_train, X_test, y_test = unpack_data_dict(data) 
         
     vec = TfidfVectorizer()
     X_train_vec = vec.fit_transform(X_train)
     X_test_vec = vec.transform(X_test)
 
-    vec_data = {'X_train': X_train_vec,
-                'y_train': data['y_train'],
-                'X_test': X_test_vec,
-                'y_test': data['y_test']}
+    vec_data = pack_data_dict(X_train_vec, y_train, X_test_vec, y_test)
 
     return vec_data
 
@@ -50,7 +48,7 @@ def main(project_dir):
     data = load_raw_data(project_dir)
     vec_data = vectorize(data)
     with open(project_dir + '/data/processed/TFIDFnewsgroup.pkl', 'wb') as f:
-        pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(vec_data, f, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == '__main__':
