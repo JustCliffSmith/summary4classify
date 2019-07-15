@@ -5,7 +5,7 @@ from pathlib import Path
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-#from utility import pack_data_dict, unpack_data_dict
+from pipeline.utility import pack_data_dict, unpack_data_dict
 
 def load_raw_data(project_dir):
     ''' Load raw newsgroup data.

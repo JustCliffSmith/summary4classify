@@ -6,7 +6,7 @@ from pathlib import Path
 from sklearn.metrics import f1_score
 
 from features.utility import load_TFIDF_data
-from utility import parse_arguments, pack_data_dict
+from pipeline.utility import parse_arguments, pack_data_dict
 
 
 def predict(model, data):

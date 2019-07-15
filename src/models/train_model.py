@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_validate
 
 from features.utility import load_TFIDF_data
-from utility import parse_arguments
+from pipeline.utility import parse_arguments
 
 def train(model, data):
     ''' Trains a scikit learn model.
