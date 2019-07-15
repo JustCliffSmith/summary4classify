@@ -10,7 +10,7 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 
 from features.build_features import load_raw_data
-from utility import pack_data_dict, unpack_data_dict
+from pipeline.utility import pack_data_dict, unpack_data_dict
 
 def load_glove_embeddings_index(word_index, embed_path):
     ''' Load glove embedding from a text file and creates embedding matrix.
