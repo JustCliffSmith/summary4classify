@@ -14,7 +14,7 @@ from features.build_features import load_raw_data
 from pipeline.utility import pack_data_dict, unpack_data_dict
 
 def load_glove_embeddings_index(word_index, embed_path):
-    ''' Load glove embedding from a text file and creates embedding matrix.
+    """ Load glove embedding from txt or pkl file and create embedding matrix.
 
     Keyword arguments:
     word_index - word_index from keras Tokenizer
@@ -22,32 +22,34 @@ def load_glove_embeddings_index(word_index, embed_path):
     
     Returns:
     embeddings_index - embeddings index
-    '''
+    """
    
-    print(embed_path.endswith('.txt'))
-    if True:#embed_path.endswith('.txt'):
+    if embed_path.endswith('.txt'):
         print("Loading glove embedding from .txt file.")
-        def get_coefs(word,*arr): 
+        def get_coefs(word, *arr): 
             return word, np.asarray(arr, dtype='float32')[:300]
         embeddings_index = dict((get_coefs(*o.split(" ")) for o in open(embed_path)))
         print('Dumping pickled copy of embeddings indices for faster loading.')
         pickle_path = embed_path[:-3] + 'pkl'
         with open(pickle_path, 'wb') as f:
             pickle.dump(embeddings_index, f, pickle.HIGHEST_PROTOCOL)
+        return embeddings_index
+
     if embed_path.endswith('.pkl'):
         logging.info("Loading glove embedding from .pkl file.")
         with open(embed_path, 'rb') as f:    
-            embeddings_index = pickle.load(f, protocol=pickle.HIGHEST_PROTOCOL)
+            embeddings_index = pickle.load(f)
+        return embeddings_index
+
     if not (embed_path.endswith('.txt') or embed_path.endswith('.pkl')):
         logging.error("Embedding path must end in .txt or .pkl")
         #raise Exception
         import sys
         sys.exit() 
 
-    return embeddings_index
 
 def create_embedding_matrix(embeddings_index, max_features, word_index):
-    ''' Creates embedding matrix from embeddings index.
+    """ Creates embedding matrix from embeddings index.
     
     Creates embedding matrix from embeddings index. If word is not found 
     then tries lowercase and then Titlecase version of the word.
@@ -57,23 +59,30 @@ def create_embedding_matrix(embeddings_index, max_features, word_index):
 
     Returns:
     embedding_matrix - matrix of embeddings, dim=(num_words, embed_size)
-    '''
+    """
     logging.info("Computing mean and std of embedding indices.")
+    print("Computing mean and std of embedding indices.")
     # Generate stats on embedding so OOV words do not skew mean and std.
     #all_embs = np.stack(embeddings_index.values())
     all_embs = np.stack(list(embeddings_index.values()))
     emb_mean = np.mean(all_embs)
     emb_std = np.std(all_embs)
     logging.info(emb_mean)
+    print(emb_mean)
     logging.info(emb_std)
-    emb_mean, emb_std = -0.005838499,0.48782197
+    print(emb_std)
+    # Hardcoded mean and std if I wanted to be lazy and not calculate it.
+    #emb_mean, emb_std = -0.005838499,0.48782197
     embed_size = all_embs.shape[1]
 
     num_words = min(max_features, len(word_index))
+    # Instantiate embedding_matrix with random weights so OOV words
+    # match the stats of the rest of the words.
     embedding_matrix = np.random.normal(emb_mean, 
                                         emb_std, 
                                         (num_words, embed_size))
     logging.info("Populating embedding matrix.")
+    print("Populating embedding matrix.")
     for word, i in word_index.items():
         if i >= max_features: 
             continue
@@ -98,18 +107,19 @@ def create_embedding_matrix(embeddings_index, max_features, word_index):
 #                    except KeyError:
 #                        pass
             
+    print(f"Embedding matrix shape: {embedding_matrix.shape}")
     return embedding_matrix 
 
 
 def build_vocab(texts):
-    ''' Create a dictionary
+    """ Create a dictionary
 
     Keyword arguments:
     texts - pandas series containing the corpus.
 
     Returns:
     vocab - dict, keys are words and values are number of occurences.
-    '''
+    """
     try:
         sentences = texts.apply(lambda x: x.split()).values
     except Exception:
@@ -126,7 +136,7 @@ def build_vocab(texts):
 
 
 def check_coverage(vocab, embeddings_index):
-    ''' Checks percentage of vocabularly in pre-trained embedding. 
+    """ Checks percentage of vocabularly in pre-trained embedding. 
 
     Loops through all words in vocabularly to determine what percentage are
     in the pre-trained embedding. Percentages are printed.
@@ -138,7 +148,7 @@ def check_coverage(vocab, embeddings_index):
     
     Return: 
     unknown_words = words not in embedding.
-    '''
+    """
     known_words = {}
     unknown_words = {}
     num_known_words = 0
@@ -169,44 +179,53 @@ def main(project_dir):
     logger = logging.getLogger(__name__)
     data = load_raw_data(project_dir)
     X_train, y_train, X_test, y_test = unpack_data_dict(data)
-    #X_train = data['X_train']
-    #y_train = data['y_train']
-    #X_test = data['X_test']
-    #y_test = data['y_test']
 
+    # Parameters for embedding.
     maxlen = 220
-    max_features = 100000
+    #max_features = 100000
+    max_features = 436356
     #embed_size = 300
+    
+    # Tokenize text.
     tokenizer = Tokenizer(num_words=max_features, filters= '', lower=False)
     logging.info('Fitting tokenizer.')
     print('Fitting tokenizer.')
     
+    # Fit tokenized on both train and test and generate word_index.
     all_text = list(X_train) + list(X_test)
     tokenizer.fit_on_texts(all_text)
     word_index = tokenizer.word_index
-   
-    X_train = tokenizer.texts_to_sequences(list(X_train))
-    y_train = y_train
-    X_test = tokenizer.texts_to_sequences(list(X_test))
-    y_test = y_test
+    path = project_dir + '/data/processed/word_index.pkl'
+    with open(path, 'wb') as f:
+        pickle.dump(word_index, f, pickle.HIGHEST_PROTOCOL)
 
+
+    # Tokenize train and test data.   
+    X_train = tokenizer.texts_to_sequences(list(X_train))
+    X_test = tokenizer.texts_to_sequences(list(X_test))
+
+    # Pad sequences up to maxlen.
     X_train = pad_sequences(X_train, maxlen=maxlen)
     X_test = pad_sequences(X_test, maxlen=maxlen)
+    print(f"Training set shape: {X_train.shape}")
+    print(f"Test set shape: {X_test.shape}")
 
     data = pack_data_dict(X_train, y_train, X_test, y_test)
-    #data = {'X_train': X_train,
-    #        'y_train': y_train,
-    #        'X_test': X_test,
-    #        'y_test': y_test}
     tok_path = project_dir + '/data/processed/data_tokenize.pkl'
     print(f'Saving tokenized data to {tok_path}.')
     with open(tok_path, 'wb') as f:
         pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
-    embed_path = project_dir + '/data/external/glove.840B.300d.txt'
-    print(embed_path)
+    #embed_path = project_dir + '/data/external/glove.840B.300d.txt'
+    embed_path = project_dir + '/data/external/glove.840B.300d.pkl'
+    print(f"Embedding path: {embed_path}")
     embeddings_index = load_glove_embeddings_index(word_index, embed_path)
-    embedding_matrix = create_embedding_matrix(embeddings_index, max_features, word_index)
+    embedding_matrix = create_embedding_matrix(embeddings_index, 
+                                               max_features, 
+                                               word_index)
+    path = project_dir + '/data/processed/embedding_matrix.pkl'
+    with open(path, 'wb') as f:
+        pickle.dump(embedding_matrix, f, pickle.HIGHEST_PROTOCOL)
     vocab = build_vocab(all_text)
     unknown_words = check_coverage(vocab, embeddings_index)
    
