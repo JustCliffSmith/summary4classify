@@ -10,7 +10,7 @@ from pipeline.utility import parse_arguments, pack_data_dict
 
 
 def predict(model, data):
-    ''' Generate predictions from trained scikit-learn model.
+    """ Generate predictions from trained scikit-learn model.
 
     Keyword arguments:
     model - trained sklearn model
@@ -18,7 +18,7 @@ def predict(model, data):
 
     Returns:
     pred -     
-    '''
+    """
 
     X_test = data['X_test']
     y_test = data['y_test']
@@ -38,12 +38,14 @@ def predict(model, data):
     return pred, pred_proba
 
 def main(project_dir, args):
-    ''' 
-    '''
+    """ 
+    """
     logger = logging.getLogger(__name__)
     if args.baseline == True:
         data = load_TFIDF_data(project_dir)
-        with open(project_dir + '/models/baseline_lr.pkl', 'rb') as f:
+        path = project_dir + '/models/baseline_lr.pkl'
+        logging.info(f"Loading model from {path}")
+        with open(path, 'rb') as f:
             lr_baseline = pickle.load(f)
         pred, pred_proba = predict(lr_baseline, data)
 

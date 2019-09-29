@@ -10,7 +10,7 @@ from features.utility import load_TFIDF_data
 from pipeline.utility import parse_arguments
 
 def train(model, data):
-    ''' Trains a scikit learn model.
+    """ Trains a scikit learn model.
     
     Keyword arguments:
     model - Instantiated sklearn model.
@@ -18,7 +18,7 @@ def train(model, data):
 
     Returns:
     model - Trained sklearn model.
-    '''
+    """
     X_train = data['X_train']
     y_train = data['y_train']
     
