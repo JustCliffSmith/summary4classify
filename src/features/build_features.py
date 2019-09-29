@@ -8,29 +8,33 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from pipeline.utility import pack_data_dict, unpack_data_dict
 
 def load_raw_data(project_dir):
-    ''' Load raw newsgroup data.
+    """ Load raw newsgroup data.
    
     Returns:
     data - dict of training and testing data. 
-    '''
+    """
     
-    with open(project_dir + '/data/interim/newsgroup.pkl', 'rb') as f:
+    path = project_dir + '/data/interim/newsgroup.pkl'
+    logging.info(f"Loading raw data from {path}")
+    with open(path, 'rb') as f:
         data = pickle.load(f)   
     return data
 
 
 def vectorize(data):
-    ''' Vectorize text data using TF-IDF. 
+    """ Vectorize text data using TF-IDF. 
 
     Keyword arguments:
     data - raw data.
 
     Returns:
     vec_data - data passed through sklearn's TF-IDF
-    '''
-   
+    """
+  
+ 
     X_train, y_train, X_test, y_test = unpack_data_dict(data) 
-        
+
+    logging.info('Vectorzing text data.')        
     vec = TfidfVectorizer()
     X_train_vec = vec.fit_transform(X_train)
     X_test_vec = vec.transform(X_test)
@@ -47,7 +51,8 @@ def main(project_dir):
 
     data = load_raw_data(project_dir)
     vec_data = vectorize(data)
-    with open(project_dir + '/data/processed/TFIDFnewsgroup.pkl', 'wb') as f:
+    path = project_dir + '/data/processed/TFIDFnewsgroup.pkl'
+    with open(path, 'wb') as f:
         pickle.dump(vec_data, f, pickle.HIGHEST_PROTOCOL)
 
 
